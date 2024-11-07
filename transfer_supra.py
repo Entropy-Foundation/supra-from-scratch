@@ -11,8 +11,8 @@ from aptos_sdk.bcs import Serializer
 from aptos_sdk.transactions import RawTransaction, TypeTag, ModuleId, AccountAddress, EntryFunction, \
     TransactionArgument, Script, MultiAgentRawTransaction
 
-from airdrop import get_account, account_exists, get_account_addr
-from check_balance import get_account_supra_coin_balance
+from airdrop import get_account_addr
+from check_balance import get_account_supra_coin_balance, get_account, account_exists
 from check_transaction import wait_for_tx
 from transaction_payload import TransactionPayload, payload_to_dict, Multisig
 
@@ -125,9 +125,10 @@ def create_transfer_supra_entry_func(
 
 if __name__ == "__main__":
     is_testnet = True
-    base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
+    # base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
+    base_url = "https://rpc-wallet-testnet.supra.com/" if is_testnet else "https://rpc-wallet-mainnet.supra.com/"
 
-    mnemonic_file = "mnemonic.enc"
+    mnemonic_file = "mnemonic_multisig.enc"
     sender_account, sender_addr = get_account_addr(mnemonic_file)
 
     recipient_addr = "0xb8922417130785087f9c7926e76542531b703693fdc74c9386b65cf4427f4e80"

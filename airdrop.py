@@ -2,22 +2,18 @@ import requests
 import time
 from aptos_sdk.account import Account as Account
 
-from check_balance import get_account_supra_coin_balance
+from check_balance import get_account_supra_coin_balance, account_exists
 from derive_keys import load_private_key
-
-
-def get_account(base_url: str, account_addr: str) -> dict:
-    return requests.get(f"{base_url}/rpc/v1/accounts/{account_addr}").json()
-
-
-def account_exists(base_url: str, account_addr: str) -> bool:
-    return get_account(base_url, account_addr) is not None
 
 
 def fund_account_with_faucet(base_url: str, account_addr: str) -> str:
     response = requests.get(f"{base_url}/rpc/v1/wallet/faucet/{account_addr}")
     res_data = response.json()
-    return res_data["Accepted"]
+    try:
+        return res_data["Accepted"]
+    except Exception as e:
+        print("Faucet error with message:", res_data)
+        return ""
 
 
 def get_account_addr(mnemonic_file: str) -> (Account, str):
@@ -48,7 +44,9 @@ def watch_balance(base_url: str, account_addr: str, repeat: int, interval_sec: i
 
 
 if __name__ == "__main__":
-    base_url = "https://rpc-testnet.supra.com/"
+    # base_url = "https://rpc-testnet.supra.com/"
+    base_url = "https://rpc-wallet-testnet.supra.com/"
+
     mnemonic_file = "mnemonic_multisig.enc"
     _, account_addr = get_account_addr(mnemonic_file)
 
