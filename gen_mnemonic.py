@@ -36,7 +36,12 @@ def load_mnemonic(file_path: str) -> str:
     kdf = Scrypt(salt=salt, length=32, n=2 ** 14, r=8, p=1, backend=default_backend())
     key = kdf.derive(password)
     aesgcm = AESGCM(key)
-    return aesgcm.decrypt(nonce, ciphertext, None).decode()
+    try:
+        mnemonic = aesgcm.decrypt(nonce, ciphertext, None).decode()
+        return mnemonic
+    except Exception as e:
+        print("Error decrypting mnemonic:", e)
+        return ""
 
 
 if __name__ == "__main__":

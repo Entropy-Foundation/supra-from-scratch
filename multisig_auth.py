@@ -9,7 +9,7 @@ from check_balance import get_account_supra_coin_balance
 from check_transaction import wait_for_tx
 from derive_keys import load_multiple_private_keys
 from transaction_payload import payload_to_dict
-from transfer_supra import create_transfer_supra_entry_func, create_raw_tx, get_account_seq_num, simulate_and_submit_tx
+from transfer_supra import create_transfer_supra_entry_func, create_raw_tx, get_account_seq_num, submit_tx_json
 
 
 # Code copied from Aptos Python SDK's MultiSignature.serialize, except that we don't use a Serializer
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     multisig_signature.to_crypto_bytes = MethodType(multisig_to_crypto_bytes, multisig_signature)
     assert multisig_public_key.verify(raw_tx.keyed(), multisig_signature)
 
-    tx_hash = simulate_and_submit_tx(base_url, {
+    tx_hash = submit_tx_json(base_url, {
         "Move": {
             "raw_txn": payload_to_dict(raw_tx),
             "authenticator": {

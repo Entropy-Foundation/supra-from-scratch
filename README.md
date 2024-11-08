@@ -16,8 +16,6 @@ Use `gen_mnemonic.py` to create a new 12-word mnemonic. The private keys for all
 - This example uses the faucet to fund the multisig account, which is suitable for testnet.
 - For mainnet, manually transfer tokens to the multi-sig account.
 
-**Known Issue**: During Step 2, the simulation always fails, but the transaction proceeds without errors.
-
 ## Steps for Onchain Multisig
 
 ### Step 1: Generate a Mnemonic
@@ -36,7 +34,7 @@ One owner account can propose a new multi-sig transaction using `propose_multisi
 ### Step 5: Vote on the Proposed Multisig Transaction
 All owner accounts, except the proposer, should vote using `vote_multisig_tx.py`.
 
-**Known Issue**: During Step 5, the simulation always succeeds, even if the multi-sig transaction doesn't gather enough votes.
+**Known Issue**: During Step 5, the simulation always succeeds, even if the multi-sig transaction doesn't gather enough votes. This is due to an Aptos issue https://github.com/aptos-labs/aptos-core/issues/8304.
 
 ### Step 6: Execute the Multisig Transaction
 Once sufficient votes are gathered, any of the owner accounts can run `execute_multisig_tx.py` to execute the transaction.

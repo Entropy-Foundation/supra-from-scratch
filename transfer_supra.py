@@ -6,7 +6,7 @@ import time
 import hashlib
 from aptos_sdk.account import Account
 from aptos_sdk.authenticator import AccountAuthenticator, Ed25519Authenticator, Authenticator
-from aptos_sdk.ed25519 import Signature, PublicKey
+from aptos_sdk.ed25519 import Signature, PublicKey, PrivateKey
 from aptos_sdk.bcs import Serializer
 from aptos_sdk.transactions import RawTransaction, TypeTag, ModuleId, AccountAddress, EntryFunction, \
     TransactionArgument, Script, MultiAgentRawTransaction
@@ -21,9 +21,12 @@ def get_account_seq_num(base_url: str, account_addr: str) -> int:
     return int(get_account(base_url, account_addr)["sequence_number"])
 
 
-def simulate_and_submit_tx(base_url: str, send_tx_dict: dict) -> str:
-    res_data = requests.post(f"{base_url}/rpc/v1/transactions/simulate", json=send_tx_dict).json()
+def simulate_tx_json(base_url: str, simulate_tx_dict: dict):
+    res_data = requests.post(f"{base_url}/rpc/v1/transactions/simulate", json=simulate_tx_dict).json()
     print("Simulation result:", res_data["output"]["Move"]["vm_status"])
+
+
+def submit_tx_json(base_url: str, send_tx_dict: dict) -> str:
     return requests.post(f"{base_url}/rpc/v1/transactions/submit", json=send_tx_dict).json()
 
 
@@ -81,8 +84,7 @@ def auth_to_dict(obj: Any) -> dict[str, Any]:
     return result
 
 
-def create_send_tx_dict(sender_account: Account, raw_txn: RawTransaction) -> dict:
-    sig = sender_account.sign(raw_txn.keyed())
+def create_tx_dict(sig: Signature, raw_txn: RawTransaction) -> dict:
     auth = Authenticator(Ed25519Authenticator(sender_account.public_key(), sig))
 
     return {
@@ -91,6 +93,17 @@ def create_send_tx_dict(sender_account: Account, raw_txn: RawTransaction) -> dic
             "authenticator": auth_to_dict(auth),
         }
     }
+
+
+def create_send_tx_dict(sender_account: Account, raw_txn: RawTransaction) -> dict:
+    sig = sender_account.sign(raw_txn.keyed())
+    return create_tx_dict(sig, raw_txn)
+
+
+def create_simulate_tx_dict(raw_txn: RawTransaction) -> dict:
+    private_key = PrivateKey.random()
+    sig = private_key.sign(raw_txn.keyed())
+    return create_tx_dict(sig, raw_txn)
 
 
 def send_tx(base_url: str,
@@ -106,8 +119,10 @@ def send_tx(base_url: str,
         gas_price,
         base_url=base_url,
     )
+    sim_tx_dict = create_simulate_tx_dict(raw_txn)
+    simulate_tx_json(base_url, sim_tx_dict)
     send_tx_dict = create_send_tx_dict(sender_account, raw_txn)
-    return simulate_and_submit_tx(base_url, send_tx_dict)
+    return submit_tx_json(base_url, send_tx_dict)
 
 
 def create_transfer_supra_entry_func(
