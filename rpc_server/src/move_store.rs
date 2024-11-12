@@ -47,7 +47,7 @@ impl TStateView for MoveStore {
 }
 
 impl MoveStore {
-    pub fn chain_id(&self) -> Option<ChainIdResource> {
+    pub fn chain_resource(&self) -> Option<ChainIdResource> {
         ChainIdResource::fetch_config(&self.as_move_resolver())
     }
 

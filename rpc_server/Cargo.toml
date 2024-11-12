@@ -4,16 +4,19 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-aptos-types = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.3.1" }
-aptos-vm = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.3.1" }
-aptos-cached-packages = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.3.1" }
-aptos-vm-genesis = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.3.1" }
+aptos-types = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
+aptos-vm = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
+aptos-cached-packages = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
+aptos-vm-genesis = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
+aptos-crypto = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0", features = ["cloneable-private-keys"] }
 
 ntex = { version = "2.8.0", features = ["tokio"] }
 anyhow = "1.0.93"
 rocksdb = { version = "0.22.0", features = ["lz4"] }
 thiserror = "2.0.3"
 bcs = { git = "https://github.com/aptos-labs/bcs.git" }
+tokio = "1.41.1"
+serde = { version = "1.0.214", features = ["derive"] }
 
 [patch.crates-io]
 x25519-dalek = { git = "https://github.com/aptos-labs/x25519-dalek", branch = "zeroize_v1" }
