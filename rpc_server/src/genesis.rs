@@ -78,3 +78,34 @@ pub fn create_genesis(accounts: &[AccountBalance]) -> crate::error::Result<MoveS
         .map_err(|e| anyhow!(e.to_string()))?;
     Ok(move_store)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::Result;
+    use aptos_crypto::ed25519::Ed25519PrivateKey;
+    use aptos_crypto::{PrivateKey, Uniform};
+    use aptos_types::transaction::authenticator::AuthenticationKey;
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+
+    #[test]
+    fn test_create_accounts() -> Result<()> {
+        let mut rng: StdRng = SeedableRng::from_seed([42u8; 32]);
+
+        let abv: Vec<AccountBalance> = (0..1_000)
+            .map(|_| {
+                let sender = Ed25519PrivateKey::generate(&mut rng);
+                let sender_pub = sender.public_key();
+                let sender_addr = AuthenticationKey::ed25519(&sender_pub).account_address();
+
+                AccountBalance {
+                    account_address: sender_addr,
+                    balance: u64::pow(10, 8),
+                }
+            })
+            .collect();
+        let _ = create_genesis(&abv)?;
+        Ok(())
+    }
+}

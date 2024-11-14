@@ -28,13 +28,10 @@ async fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use anyhow::Result;
     use aptos_crypto::ed25519::Ed25519PrivateKey;
     use aptos_crypto::{PrivateKey, Uniform};
     use aptos_types::chain_id::NamedChain;
-    use aptos_types::test_helpers::transaction_test_helpers::{
-        get_test_signed_transaction, get_test_signed_txn,
-    };
+    use aptos_types::test_helpers::transaction_test_helpers::get_test_signed_txn;
     use aptos_types::transaction::authenticator::AuthenticationKey;
     use aptos_vm_genesis::AccountBalance;
     use ntex::http::StatusCode;
@@ -69,7 +66,7 @@ mod tests {
         if resp.status() == StatusCode::INTERNAL_SERVER_ERROR {
             let error_body = test::read_body(resp).await;
             let error_msg = String::from_utf8_lossy(&error_body).to_string();
-            Err(anyhow!(error_msg))
+            Err(anyhow!(error_msg).into())
         } else {
             assert_eq!(resp.status(), StatusCode::OK);
             Ok(())

@@ -26,6 +26,7 @@ serde = { version = "1.0.214", features = ["derive"] }
 serde_json = "1.0.132"
 rayon = "1.10.0"
 num_cpus = "1.16.0"
+rand = "0.7.3" # must use the same version as aptos-core
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }
