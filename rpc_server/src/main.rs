@@ -1,7 +1,6 @@
 extern crate core;
 
 use anyhow::anyhow;
-use aptos_vm::VMValidator;
 use ntex::web::{App, HttpServer};
 use rpc_server::error::Result;
 use rpc_server::transaction::SupraTransaction;

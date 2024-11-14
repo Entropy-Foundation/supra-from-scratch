@@ -31,7 +31,7 @@ impl MoveExecutor {
         Ok(exec)
     }
 
-    fn execute_transaction_block_parallel(
+    pub fn execute_transaction_block_parallel(
         &self,
         store: &MoveStore,
         txn_block: Vec<Transaction>,
