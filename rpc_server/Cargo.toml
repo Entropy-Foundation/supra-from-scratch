@@ -11,6 +11,7 @@ test = true
 aptos-types = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-vm = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-cached-packages = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
+aptos-block-executor = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-vm-genesis = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-crypto = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0", features = ["cloneable-private-keys"] }
 
@@ -22,6 +23,8 @@ bcs = { git = "https://github.com/aptos-labs/bcs.git" }
 tokio = "1.41.1"
 serde = { version = "1.0.214", features = ["derive"] }
 serde_json = "1.0.132"
+rayon = "1.10.0"
+num_cpus = "1.16.0"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }
@@ -32,3 +35,7 @@ merlin = { git = "https://github.com/aptos-labs/merlin" }
 
 [profile.bench]
 opt-level = 3
+
+[[bench]]
+name = "chain_id_benchmark"
+harness = false

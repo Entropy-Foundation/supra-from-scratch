@@ -17,13 +17,11 @@ fn bench_chain_id(c: &mut Criterion) {
 
     c.bench_function("chain_id", |b| {
         b.to_async(&runtime).iter(|| {
-            // Create a request and call the service
             let req = test::TestRequest::get()
                 .uri("/rpc/v1/transactions/chain_id")
                 .to_request();
 
             async {
-                // Call the service and handle the response
                 let response = test::call_service(&app, req).await;
                 assert_eq!(response.status(), StatusCode::OK);
 
