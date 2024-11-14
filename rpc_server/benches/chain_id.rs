@@ -4,11 +4,12 @@ use ntex::http::StatusCode;
 use ntex::web::test;
 use ntex::web::App;
 use rpc_server::chain_id;
-use rpc_server::move_executor::load_or_create_genesis;
 use serde_json::from_slice;
+use rpc_server::genesis::create_genesis;
 
 fn bench_chain_id(c: &mut Criterion) {
-    let move_store = load_or_create_genesis().expect("Failed to load or create genesis");
+    let abv = vec![];
+    let move_store = create_genesis(&abv).expect("Failed to load or create genesis");
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
     let app = runtime.block_on(async {

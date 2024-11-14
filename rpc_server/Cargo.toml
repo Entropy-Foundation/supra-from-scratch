@@ -10,6 +10,7 @@ test = true
 [dependencies]
 aptos-types = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-vm = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
+aptos-framework = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-cached-packages = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-block-executor = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
 aptos-vm-genesis = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0" }
@@ -28,6 +29,7 @@ num_cpus = "1.16.0"
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }
+aptos-types = { git = "https://github.com/Entropy-Foundation/aptos-core", tag = "aptosvm-v1.16_supra-v1.4.0", features = ["fuzzing"] }
 
 [patch.crates-io]
 x25519-dalek = { git = "https://github.com/aptos-labs/x25519-dalek", branch = "zeroize_v1" }
@@ -37,5 +39,5 @@ merlin = { git = "https://github.com/aptos-labs/merlin" }
 opt-level = 3
 
 [[bench]]
-name = "chain_id_benchmark"
+name = "chain_id"
 harness = false
