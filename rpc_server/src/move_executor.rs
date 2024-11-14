@@ -6,9 +6,12 @@ use rayon::ThreadPool;
 
 use aptos_block_executor::txn_commit_hook::NoOpTransactionCommitHook;
 use aptos_types::block_executor::config::BlockExecutorConfig;
-use aptos_types::transaction::{Transaction, TransactionOutput};
+use aptos_types::transaction::{
+    SignedTransaction, Transaction, TransactionOutput,
+};
 use aptos_types::vm_status::VMStatus;
 use aptos_vm::block_executor::{AptosTransactionOutput, BlockAptosVM};
+use aptos_vm::AptosSimulationVM;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -54,4 +57,19 @@ impl MoveExecutor {
 
         Ok(execution_result.into_transaction_outputs_forced())
     }
+}
+
+pub async fn run_move_transaction_simulation(
+    store: &MoveStore,
+    txn: SignedTransaction,
+) -> Result<()> {
+    let state_view_store = store.clone();
+
+    tokio::task::spawn_blocking(move || {
+        let (_, _) =
+            AptosSimulationVM::create_vm_and_simulate_signed_transaction(&txn, &state_view_store);
+    })
+    .await
+    .map_err(|e| anyhow!("Simulation failure: {e}"))?;
+    Ok(())
 }
