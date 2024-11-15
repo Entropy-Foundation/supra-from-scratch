@@ -1,22 +1,24 @@
 use crate::error::{Error, Result};
-use crate::move_store::MoveStore;
+use crate::move_executor::MoveExecutor;
+use crate::state::RpcState;
 use crate::transaction::SupraTransaction;
 use anyhow::anyhow;
 use aptos_types::transaction::Transaction;
-use aptos_vm::{AptosVM, VMValidator};
+use aptos_vm::VMValidator;
 use ntex::web;
 use ntex::web::types::{Json, State};
-use crate::move_executor::MoveExecutor;
 
 pub mod error;
 pub mod genesis;
 pub mod move_executor;
 pub mod move_store;
+pub mod state;
 pub mod transaction;
 
 #[web::get("/rpc/v1/transactions/chain_id")]
-pub async fn chain_id(state: State<MoveStore>) -> Result<Json<u8>> {
-    let chain_resource = state
+pub async fn chain_id(state: State<RpcState>) -> Result<Json<u8>> {
+    let move_store = state.get_move_store();
+    let chain_resource = move_store
         .chain_resource()
         .ok_or(anyhow!("Missing chain resource."))?;
     Ok(Json(chain_resource.chain_id().id()))
@@ -24,7 +26,7 @@ pub async fn chain_id(state: State<MoveStore>) -> Result<Json<u8>> {
 
 #[web::post("/rpc/v1/transactions/submit")]
 pub async fn submit_txn(
-    state: State<MoveStore>,
+    state: State<RpcState>,
     req: Json<SupraTransaction>,
 ) -> Result<Json<aptos_crypto::HashValue>> {
     let supra_tx = req.into_inner();
@@ -33,10 +35,13 @@ pub async fn submit_txn(
     };
     let tx_hash = tx.committed_hash();
 
-    let move_store = state.get_ref().clone();
-    let vm = AptosVM::new(&move_store);
+    let vm = state.get_next_vm();
+    let move_store = state.get_move_store();
+
     tokio::task::spawn_blocking(move || {
-        vm.validate_transaction(tx.clone(), &move_store)
+        vm.lock()
+            .unwrap()
+            .validate_transaction(tx.clone(), &move_store) // Aptos does unwrap too.
             .status()
             .map_or(Ok(()), |error_code| {
                 Err(anyhow!(
@@ -44,9 +49,9 @@ pub async fn submit_txn(
                     error_code
                 ))
             })?;
-        let move_executor = MoveExecutor::new()?;
-        let txs = vec![Transaction::UserTransaction(tx)];
-        move_executor.execute_transaction_block_parallel(&move_store, txs)?;
+        // let move_executor = MoveExecutor::new()?;
+        // let txs = vec![Transaction::UserTransaction(tx)];
+        // move_executor.execute_transaction_block_parallel(&move_store, txs)?;
         Ok::<(), Error>(())
     })
     .await

@@ -1,5 +1,3 @@
-extern crate core;
-
 use anyhow::anyhow;
 use ntex::web::{App, HttpServer};
 use rpc_server::error::Result;
@@ -37,6 +35,7 @@ mod tests {
     use ntex::web::test;
     use ntex::web::App;
     use rpc_server::chain_id;
+    use rpc_server::state::RpcState;
 
     #[ntex::test]
     async fn test_submit_txns() -> Result<()> {
@@ -50,9 +49,8 @@ mod tests {
         };
         let abv = vec![ab];
         let move_store = create_genesis(&abv.as_slice())?;
-
-        let app =
-            test::init_service(App::new().state(move_store.clone()).service(submit_txn)).await;
+        let rpc_state = RpcState::new(move_store, None);
+        let app = test::init_service(App::new().state(rpc_state).service(submit_txn)).await;
 
         for seq_num in 0..1_000 {
             let signed_tx =
@@ -80,10 +78,9 @@ mod tests {
     #[ntex::test]
     async fn test_chain_id_valid_response() -> Result<()> {
         let abv = vec![];
-        let move_store = create_genesis(&abv)?;
-
-        let app = test::init_service(App::new().state(move_store.clone()).service(chain_id)).await;
-
+        let move_store = create_genesis(&abv.as_slice())?;
+        let rpc_state = RpcState::new(move_store, None);
+        let app = test::init_service(App::new().state(rpc_state).service(chain_id)).await;
         let req = test::TestRequest::get()
             .uri("/rpc/v1/transactions/chain_id")
             .to_request();

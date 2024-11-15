@@ -5,6 +5,7 @@ use ntex::web::test;
 use ntex::web::App;
 use rpc_server::chain_id;
 use rpc_server::genesis::create_genesis;
+use rpc_server::state::RpcState;
 use serde_json::from_slice;
 
 fn bench_chain_id(c: &mut Criterion) {
@@ -12,8 +13,10 @@ fn bench_chain_id(c: &mut Criterion) {
     let move_store = create_genesis(&abv).expect("Failed to load or create genesis");
 
     let runtime = tokio::runtime::Runtime::new().unwrap(); // for running async fns within a non-async fn
+    let rpc_state = RpcState::new(move_store, None);
+
     let app = runtime.block_on(test::init_service(
-        App::new().state(move_store.clone()).service(chain_id),
+        App::new().state(rpc_state).service(chain_id),
     ));
 
     c.bench_function("chain_id", |b| {
