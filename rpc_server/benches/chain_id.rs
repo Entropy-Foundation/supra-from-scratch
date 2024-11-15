@@ -4,17 +4,17 @@ use ntex::http::StatusCode;
 use ntex::web::test;
 use ntex::web::App;
 use rpc_server::chain_id;
-use serde_json::from_slice;
 use rpc_server::genesis::create_genesis;
+use serde_json::from_slice;
 
 fn bench_chain_id(c: &mut Criterion) {
     let abv = vec![];
     let move_store = create_genesis(&abv).expect("Failed to load or create genesis");
 
-    let runtime = tokio::runtime::Runtime::new().unwrap();
-    let app = runtime.block_on(async {
-        test::init_service(App::new().state(move_store.clone()).service(chain_id)).await
-    });
+    let runtime = tokio::runtime::Runtime::new().unwrap(); // for running async fns within a non-async fn
+    let app = runtime.block_on(test::init_service(
+        App::new().state(move_store.clone()).service(chain_id),
+    ));
 
     c.bench_function("chain_id", |b| {
         b.to_async(&runtime).iter(|| {

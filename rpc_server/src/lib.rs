@@ -1,5 +1,4 @@
 use crate::error::{Error, Result};
-use crate::move_executor::MoveExecutor;
 use crate::move_store::MoveStore;
 use crate::transaction::SupraTransaction;
 use anyhow::anyhow;
@@ -7,6 +6,7 @@ use aptos_types::transaction::Transaction;
 use aptos_vm::{AptosVM, VMValidator};
 use ntex::web;
 use ntex::web::types::{Json, State};
+use crate::move_executor::MoveExecutor;
 
 pub mod error;
 pub mod genesis;
@@ -34,8 +34,8 @@ pub async fn submit_txn(
     let tx_hash = tx.committed_hash();
 
     let move_store = state.get_ref().clone();
+    let vm = AptosVM::new(&move_store);
     tokio::task::spawn_blocking(move || {
-        let vm = AptosVM::new(&move_store);
         vm.validate_transaction(tx.clone(), &move_store)
             .status()
             .map_or(Ok(()), |error_code| {
