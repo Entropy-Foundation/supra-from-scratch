@@ -10,7 +10,7 @@ use serde_json::from_slice;
 
 fn bench_chain_id(c: &mut Criterion) {
     let abv = vec![];
-    let move_store = create_genesis(&abv).expect("Failed to load or create genesis");
+    let move_store = create_genesis(&abv).expect("Failed to create genesis");
 
     let runtime = tokio::runtime::Runtime::new().unwrap(); // for running async fns within a non-async fn
     let rpc_state = RpcState::new(move_store, None);

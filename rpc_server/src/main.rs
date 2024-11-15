@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use ntex::web::{App, HttpServer};
 use rpc_server::error::Result;
 use rpc_server::genesis::create_genesis;
+use rpc_server::state::RpcState;
 use rpc_server::transaction::SupraTransaction;
 use rpc_server::{chain_id, submit_txn};
 
@@ -9,10 +10,11 @@ use rpc_server::{chain_id, submit_txn};
 async fn main() -> Result<()> {
     let abv = vec![];
     let move_store = create_genesis(&abv)?;
+    let rpc_state = RpcState::new(move_store, None);
 
     let server = HttpServer::new(move || {
         App::new()
-            .state(move_store.clone())
+            .state(rpc_state.clone())
             .service(chain_id)
             .service(submit_txn)
     })

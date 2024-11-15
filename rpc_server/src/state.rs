@@ -3,6 +3,7 @@ use aptos_vm::AptosVM;
 use rand::{thread_rng, Rng};
 use std::sync::{Arc, Mutex};
 
+#[derive(Clone)]
 pub struct RpcState {
     pub move_store: MoveStore,
     pub vms: Vec<Arc<Mutex<AptosVM>>>,

@@ -45,3 +45,7 @@ harness = false
 [[bench]]
 name = "transaction_validation"
 harness = false
+
+[[bench]]
+name = "submit_transaction"
+harness = false
