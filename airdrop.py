@@ -2,13 +2,12 @@ import requests
 import time
 from aptos_sdk.account import Account as Account
 
-from check_balance import get_account_supra_coin_balance, account_exists
+from check_balance import get_account_supra_coin_balance, account_exists, get_json
 from derive_keys import load_private_key
 
 
 def fund_account_with_faucet(base_url: str, account_addr: str) -> str:
-    response = requests.get(f"{base_url}/rpc/v1/wallet/faucet/{account_addr}")
-    res_data = response.json()
+    res_data = get_json(f"{base_url}/rpc/v1/wallet/faucet/{account_addr}")
     try:
         return res_data["Accepted"]
     except Exception as e:

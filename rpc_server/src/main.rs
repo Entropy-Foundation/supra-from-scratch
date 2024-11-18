@@ -3,7 +3,6 @@ use ntex::web::{App, HttpServer};
 use rpc_server::error::Result;
 use rpc_server::genesis::create_genesis;
 use rpc_server::state::RpcState;
-use rpc_server::transaction::SupraTransaction;
 use rpc_server::{chain_id, submit_txn};
 
 #[ntex::main]
@@ -38,6 +37,7 @@ mod tests {
     use ntex::web::App;
     use rpc_server::chain_id;
     use rpc_server::state::RpcState;
+    use rpc_server::transaction::SupraTransaction;
 
     #[ntex::test]
     async fn test_submit_txns() -> Result<()> {

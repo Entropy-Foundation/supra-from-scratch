@@ -5,14 +5,14 @@ import requests
 import time
 import hashlib
 from aptos_sdk.account import Account
-from aptos_sdk.authenticator import AccountAuthenticator, Ed25519Authenticator, Authenticator
+from aptos_sdk.authenticator import Ed25519Authenticator, Authenticator
 from aptos_sdk.ed25519 import Signature, PublicKey, PrivateKey
 from aptos_sdk.bcs import Serializer
 from aptos_sdk.transactions import RawTransaction, TypeTag, ModuleId, AccountAddress, EntryFunction, \
     TransactionArgument, Script, MultiAgentRawTransaction
 
 from airdrop import get_account_addr
-from check_balance import get_account_supra_coin_balance, get_account, account_exists
+from check_balance import get_account_supra_coin_balance, get_account, account_exists, get_json
 from check_transaction import wait_for_tx
 from transaction_payload import TransactionPayload, payload_to_dict, Multisig
 
@@ -21,13 +21,22 @@ def get_account_seq_num(base_url: str, account_addr: str) -> int:
     return int(get_account(base_url, account_addr)["sequence_number"])
 
 
+def post_json(url: str, d: dict) -> dict:
+    resp = requests.post(url, json=d)
+    try:
+        return resp.json()
+    except:
+        print(f"post_json: error decoding JSON {resp}, with error text: {resp.text}")
+        return {}
+
+
 def simulate_tx_json(base_url: str, simulate_tx_dict: dict):
-    res_data = requests.post(f"{base_url}/rpc/v1/transactions/simulate", json=simulate_tx_dict).json()
+    res_data = post_json(f"{base_url}/rpc/v1/transactions/simulate", simulate_tx_dict)
     print("Simulation result:", res_data["output"]["Move"]["vm_status"])
 
 
 def submit_tx_json(base_url: str, send_tx_dict: dict) -> str:
-    return requests.post(f"{base_url}/rpc/v1/transactions/submit", json=send_tx_dict).json()
+    return str(post_json(f"{base_url}/rpc/v1/transactions/submit", send_tx_dict))
 
 
 def supra_prehash(self: RawTransaction | MultiAgentRawTransaction) -> bytes:
@@ -58,7 +67,7 @@ def create_raw_tx(
         chain_id: int = None,
         base_url: str = None,
 ) -> RawTransaction:
-    chain_id = chain_id or requests.get(f"{base_url}/rpc/v1/transactions/chain_id").json()
+    chain_id = chain_id or get_json(f"{base_url}/rpc/v1/transactions/chain_id")
     payload = TransactionPayload(payload_content)
     raw_tx = RawTransaction(sender_addr, sender_sequence_number, payload, max_gas, gas_unit_price,
                             tx_expiry_time, chain_id)
@@ -157,7 +166,7 @@ if __name__ == "__main__":
     tx_hash = send_tx(base_url, sender_account, entry_func, max_gas)
     print("Transaction submitted with hash:", tx_hash)
 
-    wait_for_tx(base_url, tx_hash, 3, 5)
+    wait_for_tx(base_url, tx_hash, 10, 1)
 
     print("Sender balance after transfer:", get_account_supra_coin_balance(base_url, sender_addr))
     print("Recipient balance after transfer:", get_account_supra_coin_balance(base_url, recipient_addr))

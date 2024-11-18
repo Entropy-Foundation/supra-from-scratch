@@ -7,6 +7,7 @@ from aptos_sdk.bcs import Serializer
 from aptos_sdk.transactions import EntryFunction
 
 from airdrop import get_account_addr, print_balance, fund_account_with_faucet, watch_balance
+from check_balance import get_json
 from check_transaction import wait_for_tx
 from transaction_payload import MultiSigTransactionPayload
 from transfer_supra import create_transfer_supra_entry_func, create_entry_func, send_tx
@@ -46,7 +47,7 @@ def create_propose_multisig_tx_entry_func(
 
 
 def get_multisig_tx_sequence_from_tx_hash(tx_hash: str) -> int:
-    tx_data = requests.get(f"{base_url}/rpc/v1/transactions/{tx_hash}").json()
+    tx_data = get_json(f"{base_url}/rpc/v1/transactions/{tx_hash}")
     if tx_data["status"] != "Success":
         raise Exception("transaction is not successfully executed")
     for event in tx_data["output"]["Move"]["events"]:

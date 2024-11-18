@@ -9,7 +9,7 @@ from check_transaction import wait_for_tx
 from derive_keys import load_multiple_private_keys
 from propose_multisig_tx import compute_multisig_account_addr
 from transaction_payload import Multisig, MultiSigTransactionPayload
-from transfer_supra import create_transfer_supra_entry_func, send_tx, create_entry_func
+from transfer_supra import create_transfer_supra_entry_func, send_tx, create_entry_func, post_json
 
 
 def create_multisig(multisig_addr: AccountAddress, entry_func: EntryFunction) -> Multisig:
@@ -26,7 +26,7 @@ def invoke_module_view_function(base_url: str,
         "arguments": args,
     }
 
-    res = requests.post(f"{base_url}/rpc/v1/view", json=d).json()
+    res = post_json(f"{base_url}/rpc/v1/view", d)
     return res["result"]
 
 
