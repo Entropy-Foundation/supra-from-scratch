@@ -13,7 +13,7 @@ from aptos_sdk.transactions import RawTransaction, TypeTag, ModuleId, AccountAdd
 
 from airdrop import get_account_addr
 from check_balance import get_account_supra_coin_balance, get_account, account_exists, get_json
-from check_transaction import wait_for_tx
+from check_transaction import wait_for_tx, get_transaction_block_time
 from transaction_payload import TransactionPayload, payload_to_dict, Multisig
 
 
@@ -163,13 +163,20 @@ if __name__ == "__main__":
     entry_func, max_gas = create_transfer_supra_entry_func(base_url, recipient_addr, amount)
 
     for i in range(1000):
-        print("Sender balance before transfer:", get_account_supra_coin_balance(base_url, sender_addr))
-        print("Recipient balance before transfer:", get_account_supra_coin_balance(base_url, recipient_addr))
+        sender_balance_before = get_account_supra_coin_balance(base_url, sender_addr)
+        rcpt_balance_before = get_account_supra_coin_balance(base_url, recipient_addr)
 
+        start_time = int(time.time())
         tx_hash = send_tx(base_url, sender_account, entry_func, max_gas)
+        submit_time = int(time.time())
         print("Transaction submitted with hash:", tx_hash)
 
-        wait_for_tx(base_url, tx_hash, 10, 1)
+        wait_for_tx(base_url, tx_hash, 20, 1)
 
-        print("Sender balance after transfer:", get_account_supra_coin_balance(base_url, sender_addr))
-        print("Recipient balance after transfer:", get_account_supra_coin_balance(base_url, recipient_addr))
+        block_time = get_transaction_block_time(base_url, tx_hash) // 1_000_000
+        current_time = int(time.time())
+
+        print(
+            f"Submission: {submit_time - start_time}s, Pre-block: {block_time - submit_time}s, Block: {current_time - block_time}s")
+        print(
+            f"Sender: {get_account_supra_coin_balance(base_url, sender_addr) - sender_balance_before} Recipient: {get_account_supra_coin_balance(base_url, recipient_addr) - rcpt_balance_before}")
