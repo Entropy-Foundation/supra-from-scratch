@@ -6,7 +6,7 @@ use aptos_types::on_chain_config::{OnChainConsensusConfig, OnChainExecutionConfi
 use aptos_types::transaction::ChangeSet;
 use aptos_vm_genesis::{
     default_gas_schedule, encode_genesis_change_set_for_testnet, AccountBalance,
-    GenesisConfiguration, TestValidator, GENESIS_KEYPAIR,
+    GenesisConfiguration, TestValidator, VestingPoolsMap, GENESIS_KEYPAIR,
 };
 use rocksdb::WriteBatch;
 use std::path::Path;
@@ -41,6 +41,7 @@ fn genesis_config() -> GenesisConfiguration {
 pub fn generate_genesis(
     count: Option<usize>,
     accounts: &[AccountBalance],
+    vesting_pools: &[VestingPoolsMap],
 ) -> (ChangeSet, Vec<TestValidator>) {
     let framework = aptos_cached_packages::head_release_bundle();
     let test_validators = TestValidator::new_test_set(count, Some(1_000_000_000_000_000));
@@ -54,7 +55,7 @@ pub fn generate_genesis(
         &validators,
         &[],
         0,
-        &[],
+        vesting_pools,
         &[],
         framework,
         ChainId::test(),
@@ -66,9 +67,12 @@ pub fn generate_genesis(
     );
     (genesis, test_validators)
 }
-pub fn create_genesis(accounts: &[AccountBalance]) -> crate::error::Result<MoveStore> {
+pub fn create_genesis(
+    accounts: &[AccountBalance],
+    vesting_pools: &[VestingPoolsMap],
+) -> crate::error::Result<MoveStore> {
     let move_store = MoveStore::new(Path::new("./move_store.db"), None)?;
-    let (change_set, _) = generate_genesis(Some(4), accounts);
+    let (change_set, _) = generate_genesis(Some(4), accounts, vesting_pools);
     let mut batch = WriteBatch::default();
 
     move_store.add_write_set(&mut batch, change_set.write_set())?;
@@ -89,11 +93,10 @@ mod tests {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
 
-    #[test]
-    fn test_create_accounts() -> Result<()> {
+    fn create_test_abs(n: usize) -> Vec<AccountBalance> {
         let mut rng: StdRng = SeedableRng::from_seed([42u8; 32]);
 
-        let abv: Vec<AccountBalance> = (0..1_000)
+        (0..n)
             .map(|_| {
                 let sender = Ed25519PrivateKey::generate(&mut rng);
                 let sender_pub = sender.public_key();
@@ -104,8 +107,53 @@ mod tests {
                     balance: u64::pow(10, 8),
                 }
             })
+            .collect()
+    }
+
+    #[test]
+    fn test_create_accounts() -> Result<()> {
+        let abs = create_test_abs(1_000);
+        let vps = vec![];
+        let _ = create_genesis(&abs, &vps)?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_create_accounts_with_vesting_pools() -> Result<()> {
+        let n = 100_000;
+        let abs = create_test_abs(n);
+
+        let shareholders: Vec<_> = (1..n)
+            .map(|i| {
+                abs[i].account_address
+            })
             .collect();
-        let _ = create_genesis(&abv)?;
+        
+        // let vps: Vec<_> = (0..n - 1)
+        //     .map(|i| VestingPoolsMap {
+        //         admin_address: abs[i].account_address,
+        //         vpool_locking_percentage: 0,
+        //         vesting_numerators: vec![],
+        //         vesting_denominator: 100,
+        //         withdrawal_address: abs[i].account_address,
+        //         shareholders: shareholders,
+        //         cliff_period_in_seconds: 0,
+        //         period_duration_in_seconds: 0,
+        //     })
+        //     .collect();
+
+        let vp = VestingPoolsMap {
+            admin_address: abs[0].account_address,
+            vpool_locking_percentage: 0,
+            vesting_numerators: vec![],
+            vesting_denominator: 100,
+            withdrawal_address: abs[0].account_address,
+            shareholders,
+            cliff_period_in_seconds: 0,
+            period_duration_in_seconds: 0,
+        };
+        let vps = vec![vp];
+        let _ = create_genesis(&abs, &vps)?;
         Ok(())
     }
 }
