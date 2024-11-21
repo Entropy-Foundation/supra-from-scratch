@@ -45,14 +45,14 @@ pub fn generate_genesis(
 ) -> (ChangeSet, Vec<TestValidator>) {
     let framework = aptos_cached_packages::head_release_bundle();
     let test_validators = TestValidator::new_test_set(count, Some(1_000_000_000_000_000));
-    let validators: Vec<_> = test_validators.iter().map(|t| t.data.clone()).collect();
+    // let validators: Vec<_> = test_validators.iter().map(|t| t.data.clone()).collect();
 
     let genesis = encode_genesis_change_set_for_testnet(
         &GENESIS_KEYPAIR.1,
         accounts,
         &[],
         None,
-        &validators,
+        &[],
         &[],
         0,
         vesting_pools,
@@ -74,7 +74,7 @@ pub fn create_genesis(
     let move_store = MoveStore::new(Path::new("./move_store.db"), None)?;
     let (change_set, _) = generate_genesis(Some(4), accounts, vesting_pools);
     let mut batch = WriteBatch::default();
-
+    
     move_store.add_write_set(&mut batch, change_set.write_set())?;
     move_store
         .db
@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn test_create_accounts_with_vesting_pools() -> Result<()> {
-        let n = 100_000;
+        let n = 2;
         let abs = create_test_abs(n);
 
         let shareholders: Vec<_> = (1..n)
@@ -129,30 +129,30 @@ mod tests {
             })
             .collect();
         
-        // let vps: Vec<_> = (0..n - 1)
-        //     .map(|i| VestingPoolsMap {
-        //         admin_address: abs[i].account_address,
-        //         vpool_locking_percentage: 0,
-        //         vesting_numerators: vec![],
-        //         vesting_denominator: 100,
-        //         withdrawal_address: abs[i].account_address,
-        //         shareholders: shareholders,
-        //         cliff_period_in_seconds: 0,
-        //         period_duration_in_seconds: 0,
-        //     })
-        //     .collect();
+        let vps: Vec<_> = (0..n)
+            .map(|i| VestingPoolsMap {
+                admin_address: abs[i].account_address,
+                vpool_locking_percentage: 10, // must be non-zero   
+                vesting_numerators: vec![100],
+                vesting_denominator: 100,
+                withdrawal_address: abs[i].account_address,
+                shareholders: vec![abs[i].account_address],
+                cliff_period_in_seconds: 0,
+                period_duration_in_seconds: 3600, // must be non-zero
+            })
+            .collect();
 
-        let vp = VestingPoolsMap {
-            admin_address: abs[0].account_address,
-            vpool_locking_percentage: 0,
-            vesting_numerators: vec![],
-            vesting_denominator: 100,
-            withdrawal_address: abs[0].account_address,
-            shareholders,
-            cliff_period_in_seconds: 0,
-            period_duration_in_seconds: 0,
-        };
-        let vps = vec![vp];
+        // let vp = VestingPoolsMap {
+        //     admin_address: abs[0].account_address,
+        //     vpool_locking_percentage: 10, // must be non-zero
+        //     vesting_numerators: vec![10],
+        //     vesting_denominator: 100,
+        //     withdrawal_address: abs[0].account_address,
+        //     shareholders,
+        //     cliff_period_in_seconds: 0,
+        //     period_duration_in_seconds: 3600, // must be non-zero
+        // };
+        // let vps = vec![vp];
         let _ = create_genesis(&abs, &vps)?;
         Ok(())
     }

@@ -7,8 +7,8 @@ use rpc_server::{chain_id, submit_txn};
 
 #[ntex::main]
 async fn main() -> Result<()> {
-    let abv = vec![];
-    let move_store = create_genesis(&abv)?;
+    let abs = vec![];
+    let move_store = create_genesis(&abs, &[])?;
     let rpc_state = RpcState::new(move_store, None);
 
     let server = HttpServer::new(move || {
@@ -50,7 +50,7 @@ mod tests {
             balance: u64::pow(10, 8),
         };
         let abv = vec![ab];
-        let move_store = create_genesis(&abv.as_slice())?;
+        let move_store = create_genesis(&abv.as_slice(), &[])?;
         let rpc_state = RpcState::new(move_store, None);
         let app = test::init_service(App::new().state(rpc_state).service(submit_txn)).await;
 
@@ -80,7 +80,7 @@ mod tests {
     #[ntex::test]
     async fn test_chain_id_valid_response() -> Result<()> {
         let abv = vec![];
-        let move_store = create_genesis(&abv.as_slice())?;
+        let move_store = create_genesis(&abv, &[])?;
         let rpc_state = RpcState::new(move_store, None);
         let app = test::init_service(App::new().state(rpc_state).service(chain_id)).await;
         let req = test::TestRequest::get()

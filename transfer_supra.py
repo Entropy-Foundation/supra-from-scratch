@@ -63,10 +63,11 @@ def create_raw_tx(
         payload_content: EntryFunction | Multisig | Script,
         max_gas: int = 500_000,
         gas_unit_price: int = 100,
-        tx_expiry_time: int = int(time.time()) + 300,
+        tx_expiry_timespan: int = 300,
         chain_id: int = None,
         base_url: str = None,
 ) -> RawTransaction:
+    tx_expiry_time = int(time.time()) + tx_expiry_timespan
     chain_id = chain_id or get_json(f"{base_url}/rpc/v1/transactions/chain_id")
     payload = TransactionPayload(payload_content)
     raw_tx = RawTransaction(sender_addr, sender_sequence_number, payload, max_gas, gas_unit_price,
@@ -149,8 +150,8 @@ def create_transfer_supra_entry_func(
 
 if __name__ == "__main__":
     is_testnet = True
-    # base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
-    base_url = "https://rpc-wallet-testnet.supra.com/" if is_testnet else "https://rpc-wallet-mainnet.supra.com/"
+    base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
+    # base_url = "https://rpc-wallet-testnet.supra.com/" if is_testnet else "https://rpc-wallet-mainnet.supra.com/"
 
     mnemonic_file = "mnemonic_multisig.enc"
     sender_account, sender_addr = get_account_addr(mnemonic_file)
@@ -159,14 +160,16 @@ if __name__ == "__main__":
     amount = 10
     print(f"Transferring {amount} quants from {sender_addr} to {recipient_addr}.")
 
-    print("Sender balance before transfer:", get_account_supra_coin_balance(base_url, sender_addr))
-    print("Recipient balance before transfer:", get_account_supra_coin_balance(base_url, recipient_addr))
-
     entry_func, max_gas = create_transfer_supra_entry_func(base_url, recipient_addr, amount)
-    tx_hash = send_tx(base_url, sender_account, entry_func, max_gas)
-    print("Transaction submitted with hash:", tx_hash)
 
-    wait_for_tx(base_url, tx_hash, 10, 1)
+    for i in range(1000):
+        print("Sender balance before transfer:", get_account_supra_coin_balance(base_url, sender_addr))
+        print("Recipient balance before transfer:", get_account_supra_coin_balance(base_url, recipient_addr))
 
-    print("Sender balance after transfer:", get_account_supra_coin_balance(base_url, sender_addr))
-    print("Recipient balance after transfer:", get_account_supra_coin_balance(base_url, recipient_addr))
+        tx_hash = send_tx(base_url, sender_account, entry_func, max_gas)
+        print("Transaction submitted with hash:", tx_hash)
+
+        wait_for_tx(base_url, tx_hash, 10, 1)
+
+        print("Sender balance after transfer:", get_account_supra_coin_balance(base_url, sender_addr))
+        print("Recipient balance after transfer:", get_account_supra_coin_balance(base_url, recipient_addr))
