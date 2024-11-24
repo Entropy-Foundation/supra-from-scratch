@@ -13,7 +13,8 @@ from aptos_sdk.transactions import RawTransaction, TypeTag, ModuleId, AccountAdd
 
 from airdrop import get_account_addr
 from check_balance import get_account_supra_coin_balance, get_account, account_exists, get_json
-from check_transaction import wait_for_tx, get_transaction_block_time
+from check_block import get_block_round_by_height
+from check_transaction import wait_for_tx, get_transaction_block_time, get_transaction_block_height
 from transaction_payload import TransactionPayload, payload_to_dict, Multisig
 
 
@@ -150,8 +151,9 @@ def create_transfer_supra_entry_func(
 
 if __name__ == "__main__":
     is_testnet = True
-    base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
+    # base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
     # base_url = "https://rpc-wallet-testnet.supra.com/" if is_testnet else "https://rpc-wallet-mainnet.supra.com/"
+    base_url = "https://rpc-testnet1.supra.com"
 
     mnemonic_file = "mnemonic_multisig.enc"
     sender_account, sender_addr = get_account_addr(mnemonic_file)
@@ -171,12 +173,16 @@ if __name__ == "__main__":
         submit_time = int(time.time())
         print("Transaction submitted with hash:", tx_hash)
 
-        wait_for_tx(base_url, tx_hash, 20, 1)
+        wait_for_tx(base_url, tx_hash, 30, 1)
 
         block_time = get_transaction_block_time(base_url, tx_hash) // 1_000_000
         current_time = int(time.time())
 
+        block_height = get_transaction_block_height(base_url, tx_hash)
+        rnd = get_block_round_by_height(base_url, block_height)
+        previous_rnd = get_block_round_by_height(base_url, block_height - 1)
+
         print(
-            f"Submission: {submit_time - start_time}s, Pre-block: {block_time - submit_time}s, Block: {current_time - block_time}s")
-        print(
-            f"Sender: {get_account_supra_coin_balance(base_url, sender_addr) - sender_balance_before} Recipient: {get_account_supra_coin_balance(base_url, recipient_addr) - rcpt_balance_before}")
+            f"Submission: {submit_time - start_time}s, Pre-block: {block_time - submit_time}s, Block: {current_time - block_time}s, Timeout rounds: {rnd - previous_rnd - 1}")
+        # print(
+        #     f"Sender: {get_account_supra_coin_balance(base_url, sender_addr) - sender_balance_before} Recipient: {get_account_supra_coin_balance(base_url, recipient_addr) - rcpt_balance_before}")

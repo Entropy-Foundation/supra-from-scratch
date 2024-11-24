@@ -2,9 +2,10 @@ import time
 from datetime import datetime, timezone
 
 from check_balance import get_json
+from check_block import get_block_round_by_height
 
 
-def get_transaction_info(base_url: str, tx_hash: str):
+def get_transaction_info(base_url: str, tx_hash: str) -> dict:
     return get_json(f"{base_url}/rpc/v1/transactions/{tx_hash}")
 
 
@@ -19,6 +20,11 @@ def get_transaction_status(base_url: str, tx_hash: str) -> str:
 def get_transaction_block_time(base_url: str, tx_hash: str) -> int:
     d = get_transaction_info(base_url, tx_hash)
     return int(d["block_header"]["timestamp"]["microseconds_since_unix_epoch"])
+
+
+def get_transaction_block_height(base_url: str, tx_hash: str) -> int:
+    d = get_transaction_info(base_url, tx_hash)
+    return int(d["block_header"]["height"])
 
 
 def wait_for_tx(base_url: str, tx_hash: str, repeat: int, interval_sec: int, check_first=False) -> None:
@@ -37,13 +43,17 @@ def wait_for_tx(base_url: str, tx_hash: str, repeat: int, interval_sec: int, che
 
 if __name__ == "__main__":
     is_testnet = True
-    base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
+    base_url = "https://rpc-testnet.supra.com" if is_testnet else "https://rpc-mainnet.supra.com"
 
-    # tx_hash = "0xfd937da4f737151d5289a2bcd7c09af9feb7d680dee701f0281eec8c7de82126"
-    tx_hash = "0xb7f387c873c0b0bccd765c31dd05139800eb0e48c9e9343751af1a12f76308c9"
+    tx_hash = "0xfd937da4f737151d5289a2bcd7c09af9feb7d680dee701f0281eec8c7de82126"
 
-    wait_for_tx(base_url, tx_hash, 3, 5, True)
+    wait_for_tx(base_url, tx_hash, 3, 1, True)
 
     block_time = get_transaction_block_time(base_url, tx_hash) // 1_000_000
     elapsed_time = int(time.time()) - block_time
     print(f"Elapsed time: {elapsed_time // 3600}h {(elapsed_time % 3600) // 60}m {elapsed_time % 60}s")
+
+    block_height = get_transaction_block_height(base_url, tx_hash)
+    rnd = get_block_round_by_height(base_url, block_height)
+    previous_rnd = get_block_round_by_height(base_url, block_height - 1)
+    print(f"timeout rounds: {rnd - previous_rnd - 1}")
