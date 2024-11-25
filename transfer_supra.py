@@ -33,7 +33,12 @@ def post_json(url: str, d: dict) -> dict:
 
 def simulate_tx_json(base_url: str, simulate_tx_dict: dict):
     res_data = post_json(f"{base_url}/rpc/v1/transactions/simulate", simulate_tx_dict)
-    print("Simulation result:", res_data["output"]["Move"]["vm_status"])
+    try:
+        res = res_data["output"]["Move"]["vm_status"]
+    except:
+        print(res_data)
+        res = "Error"
+    print("Simulation result:", res)
 
 
 def submit_tx_json(base_url: str, send_tx_dict: dict) -> str:
@@ -95,8 +100,8 @@ def auth_to_dict(obj: Any) -> dict[str, Any]:
     return result
 
 
-def create_tx_dict(sig: Signature, raw_txn: RawTransaction) -> dict:
-    auth = Authenticator(Ed25519Authenticator(sender_account.public_key(), sig))
+def create_tx_dict(pub_key: PublicKey, sig: Signature, raw_txn: RawTransaction) -> dict:
+    auth = Authenticator(Ed25519Authenticator(pub_key, sig))
 
     return {
         "Move": {
@@ -108,13 +113,13 @@ def create_tx_dict(sig: Signature, raw_txn: RawTransaction) -> dict:
 
 def create_send_tx_dict(sender_account: Account, raw_txn: RawTransaction) -> dict:
     sig = sender_account.sign(raw_txn.keyed())
-    return create_tx_dict(sig, raw_txn)
+    return create_tx_dict(sender_account.public_key(), sig, raw_txn)
 
 
-def create_simulate_tx_dict(raw_txn: RawTransaction) -> dict:
+def create_simulate_tx_dict(sender_pub_key: PublicKey, raw_txn: RawTransaction) -> dict:
     private_key = PrivateKey.random()
     sig = private_key.sign(raw_txn.keyed())
-    return create_tx_dict(sig, raw_txn)
+    return create_tx_dict(sender_pub_key, sig, raw_txn)
 
 
 def send_tx(base_url: str,
@@ -130,7 +135,7 @@ def send_tx(base_url: str,
         gas_price,
         base_url=base_url,
     )
-    sim_tx_dict = create_simulate_tx_dict(raw_txn)
+    sim_tx_dict = create_simulate_tx_dict(sender_account.public_key(), raw_txn)
     simulate_tx_json(base_url, sim_tx_dict)
     send_tx_dict = create_send_tx_dict(sender_account, raw_txn)
     return submit_tx_json(base_url, send_tx_dict)
@@ -151,9 +156,7 @@ def create_transfer_supra_entry_func(
 
 if __name__ == "__main__":
     is_testnet = True
-    # base_url = "https://rpc-testnet.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
-    # base_url = "https://rpc-wallet-testnet.supra.com/" if is_testnet else "https://rpc-wallet-mainnet.supra.com/"
-    base_url = "https://rpc-testnet1.supra.com"
+    base_url = "https://rpc-testnet1.supra.com" if is_testnet else "https://rpc-mainnet.supra.com"
 
     mnemonic_file = "mnemonic_multisig.enc"
     sender_account, sender_addr = get_account_addr(mnemonic_file)
@@ -184,5 +187,5 @@ if __name__ == "__main__":
 
         print(
             f"Submission: {submit_time - start_time}s, Pre-block: {block_time - submit_time}s, Block: {current_time - block_time}s, Timeout rounds: {rnd - previous_rnd - 1}")
-        # print(
-        #     f"Sender: {get_account_supra_coin_balance(base_url, sender_addr) - sender_balance_before} Recipient: {get_account_supra_coin_balance(base_url, recipient_addr) - rcpt_balance_before}")
+        print(
+            f"Sender: {get_account_supra_coin_balance(base_url, sender_addr) - sender_balance_before}, Recipient: {get_account_supra_coin_balance(base_url, recipient_addr) - rcpt_balance_before}")
