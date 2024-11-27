@@ -157,17 +157,18 @@ def create_transfer_supra_entry_func(
 if __name__ == "__main__":
     is_testnet = True
     base_url = "https://rpc-testnet1.supra.com" if is_testnet else "https://rpc-mainnet.supra.com"
+    mnemonic_file = "mnemonic_multisig.enc" if is_testnet else "mnemonic_multisig_mainnet.enc"
+    repeat = 1000 if is_testnet else 1
 
-    mnemonic_file = "mnemonic_multisig.enc"
     sender_account, sender_addr = get_account_addr(mnemonic_file)
 
-    recipient_addr = "0xb8922417130785087f9c7926e76542531b703693fdc74c9386b65cf4427f4e80"
-    amount = 10
+    recipient_addr = "e3948c9e3a24c51c4006ef2acc44606055117d021158f320062df099c4a94150"
+    amount = 1000000000
     print(f"Transferring {amount} quants from {sender_addr} to {recipient_addr}.")
 
     entry_func, max_gas = create_transfer_supra_entry_func(base_url, recipient_addr, amount)
 
-    for i in range(1000):
+    for i in range(repeat):
         sender_balance_before = get_account_supra_coin_balance(base_url, sender_addr)
         rcpt_balance_before = get_account_supra_coin_balance(base_url, recipient_addr)
 

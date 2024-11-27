@@ -39,7 +39,7 @@ def print_keys(private_key_bytes: bytes):
 
 if __name__ == "__main__":
     # Print single private key details
-    private_key_bytes = load_private_key("mnemonic_multisig.enc")
+    private_key_bytes = load_private_key("mnemonic_mainnet.enc")
     print_keys(private_key_bytes)
 
     # Print details for the first 5 accounts

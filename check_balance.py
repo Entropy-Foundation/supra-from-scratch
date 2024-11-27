@@ -31,10 +31,8 @@ def get_account_supra_coin_balance(base_url: str, account_addr: str) -> int:
 
 
 if __name__ == "__main__":
-    is_testnet = True
-    base_url = "https://rpc-testnet.supra.com" if is_testnet else "https://rpc-mainnet.supra.com"
-    # base_url = "https://rpc-wallet-testnet.supra.com/" if is_testnet else "https://rpc-wallet-mainnet.supra.com/"
+    is_testnet = False
+    base_url = "https://rpc-testnet1.supra.com" if is_testnet else "https://rpc-mainnet.supra.com"
 
-    account_addr = "e3948c9e3a24c51c4006ef2acc44606055117d021158f320062df099c4a94150"  # DORA
-    # account_addr = "429d89b7df74384ee5ead8c9487d6e1f4dcdec86ade77c2fc29c3e6ace649ec1"  # foundation multi-sig
+    account_addr = "e3948c9e3a24c51c4006ef2acc44606055117d021158f320062df099c4a94150"
     print("Balance:", get_account_supra_coin_balance(base_url, account_addr))

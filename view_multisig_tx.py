@@ -76,12 +76,12 @@ def get_multisig_tx_vote(base_url: str, account_addr: AccountAddress, seq_num: i
 
 
 if __name__ == "__main__":
-    is_testnet = True
+    is_testnet = False
     base_url = "https://rpc-testnet1.supra.com/" if is_testnet else "https://rpc-mainnet.supra.com"
     mnemonic_file = "mnemonic_multisig.enc" if is_testnet else "mnemonic_multisig_mainnet.enc"
 
     multisig_addr = AccountAddress.from_str_relaxed(
-        "0xf28ce12bbc44d5a7a38541816196cf65125aa804e8d87a5da6e166e701919ddc")
+        "0xadf39402c164a372a788358b7c8e695ae794d8f787ad36464708c8eb1f3a64a9")
     multisig_owners = get_multisig_account_owners(base_url, multisig_addr)
     print("Multisig account owners:", get_multisig_account_owners(base_url, multisig_addr))
 
@@ -93,9 +93,9 @@ if __name__ == "__main__":
     threshold = get_multisig_num_signatures_required(base_url, multisig_addr)
     print("Multisig threshold:", threshold)
 
-    # print("Multisig tx can be executed:",
-    #       get_multisig_tx_can_be_executed(base_url, multisig_addr, 1))
-
     for addr in multisig_owners:
-        voted, vote = get_multisig_tx_vote(base_url, multisig_addr, 1, AccountAddress.from_str_relaxed(addr))
-        print(f"Voted: {voted}, vote: {vote}")
+        voted, vote = get_multisig_tx_vote(base_url, multisig_addr, 2, AccountAddress.from_str_relaxed(addr))
+        print(f"{addr} voted: {voted}, vote: {vote}")
+
+    print("Multisig tx can be executed:",
+          get_multisig_tx_can_be_executed(base_url, multisig_addr, 2))
