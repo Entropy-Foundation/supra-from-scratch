@@ -45,7 +45,7 @@ if __name__ == "__main__":
     is_testnet = True
     base_url = "https://rpc-testnet.supra.com" if is_testnet else "https://rpc-mainnet.supra.com"
 
-    tx_hash = "0xfd937da4f737151d5289a2bcd7c09af9feb7d680dee701f0281eec8c7de82126"
+    tx_hash = "0xdf33c5493e5b8cf694b1c59a3f9add67433fbe6cc33983eb4f415e39ba2f0a3b"
 
     wait_for_tx(base_url, tx_hash, 3, 1, True)
 
